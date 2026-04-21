@@ -1,0 +1,110 @@
+:root {
+    --ink-black: #0E131F;
+    --twilight-indigo: #38405F;
+    --vintage-grape: #59546C;
+    --cool-steel: #8B939C;
+    --strawberry-red: #FF0035;
+    --text-white: #F5F5F0;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background-color: var(--ink-black);
+    color: var(--text-white);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+}
+
+/* Nav Bar - Premium Minimalist */
+.v-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 5%;
+    border-bottom: 1px solid var(--vintage-grape);
+}
+
+.logo { font-weight: 800; font-size: 1.5rem; letter-spacing: -1px; }
+.logo span { color: var(--strawberry-red); }
+
+.nav-links a {
+    color: var(--cool-steel);
+    text-decoration: none;
+    margin-left: 2rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    transition: 0.3s;
+}
+
+.nav-links a:hover { color: var(--strawberry-red); }
+
+/* Hero Section - Bold Typography */
+.v-hero {
+    padding: 8rem 5%;
+    max-width: 1000px;
+}
+
+.v-hero h1 {
+    font-size: 4rem;
+    line-height: 1.1;
+    margin-bottom: 2rem;
+}
+
+.v-hero h1 em {
+    font-style: italic;
+    color: var(--strawberry-red);
+}
+
+/* Search Container - Floating Design */
+.v-search {
+    display: flex;
+    gap: 10px;
+    background: var(--twilight-indigo);
+    padding: 10px;
+    border-radius: 50px;
+    width: fit-content;
+}
+
+.v-search input {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    width: 300px;
+    outline: none;
+}
+
+.v-btn {
+    background: var(--strawberry-red);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Pet Card Grid */
+.pet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+    padding: 50px 5%;
+}
+
+.pet-card {
+    background: var(--twilight-indigo);
+    padding: 2rem;
+    border-radius: 5px;
+    transition: transform 0.4s ease;
+    border-bottom: 4px solid transparent;
+}
+
+.pet-card:hover {
+    transform: translateY(-10px);
+    border-color: var(--strawberry-red);
+}
+
+.pet-card h3 { font-size: 1.8rem; margin-bottom: 10px; }
+.status-tag { color: var(--strawberry-red); font-size: 0.8rem; font-weight: bold; }

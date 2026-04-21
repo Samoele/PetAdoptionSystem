@@ -1,0 +1,57 @@
+#generic code used from gemini ai for initial frontend
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AdoptTallahassee | Pet Adoption</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="v-nav">
+        <div class="logo">ADOPT.<span>Tally</span></div>
+        <div class="nav-links">
+            <a href="#">Shelters</a>
+            <a href="#">Pets</a>
+            <a href="#">Volunteer</a>
+        </div>
+    </nav>
+
+    <header class="v-hero">
+        <h1>Every animal has a <em>story</em>. Help write the next chapter.</h1>
+        <p style="color: var(--cool-steel); margin-bottom: 2rem;">Connecting loyal companions with loving homes across Tallahassee through advanced data integration.</p>
+        
+        <div class="v-search">
+            <input type="text" id="species-search" placeholder="Search species...">
+            <button class="v-btn" onclick="loadPets()">Explore</button>
+        </div>
+    </header>
+
+    <section id="pet-results" class="pet-grid">
+        </section>
+
+    <script>
+        async function loadPets() {
+            const species = document.getElementById('species-search').value;
+            // Basic Function: Search and Print
+            const response = await fetch(`/api/pets?species=${species}`);
+            const pets = await response.json();
+            const container = document.getElementById('pet-results');
+            container.innerHTML = '';
+
+            pets.forEach(pet => {
+                container.innerHTML += `
+                    <div class="pet-card">
+                        <span class="status-tag">${pet.AdoptionStatus}</span>
+                        <h3>${pet.Name}</h3>
+                        <p>${pet.Breed} • ${pet.Age} years old</p>
+                        <p style="color: var(--cool-steel); font-size: 0.9rem; margin-top: 10px;">Shelter: ${pet.ShelterName}</p>
+                        <button class="v-btn" style="margin-top: 20px; width: 100%;" onclick="adoptPet(${pet.PetID})">Adopt</button>
+                    </div>
+                `;
+            });
+        }
+        window.onload = loadPets;
+    </script>
+</body>
+</html>
