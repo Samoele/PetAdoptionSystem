@@ -32,5 +32,31 @@ def get_pets():
     # Convert database rows to a list of dictionaries for the frontend
     return jsonify([dict(ix) for ix in pets])
 
+@app.route('/api/adopt', methods=['POST'])
+def adopt_pet():
+    data = request.json
+    pet_id = data['pet_id']
+    adopter_name = data['adopter_name']
+    adopter_email = data['adopter_email']
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        #insert adopter info into Adopters table, using INSERT OR IGNORE to avoid duplicates based on unique email constraint [cite: 5]
+        cursor.execute ('INSERT OR IGNORE INTO Adopters (Name, Email) VALUES (?, ?)', (adopter_name, adopter_email))
+        adopter_id = cursor.lastrowid # Get the AdopterID of the newly inserted adopter or existing one
+
+        #Update pets status
+        cursor.execute('UPDATE Pets SET AdoptionStatus = "Pending" WHERE PetID = ?', (pet_id))
+        
+        #Create application
+        cursor.execute('INSERT INTO Applications (PetID, AdopterID) VALUES (?, ?)', (pet_id, adopter_id))
+        conn.commit()
+
+        return jsonify({'message': 'Adoption application submitted successfully!'})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 400  
+        
 if __name__ == '__main__':
     app.run(debug=True)
