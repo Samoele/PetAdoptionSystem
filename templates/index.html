@@ -1,3 +1,5 @@
+#generic code used from gemini ai for initial frontend
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,226 +8,115 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-
     <nav class="v-nav">
         <div class="logo">ADOPT.<span>Tally</span></div>
         <div class="nav-links">
-            <a href="#stats-section">Shelters</a>
-            <a href="#pet-results">Pets</a>
-            <a href="#manage-section">Manage</a>
+            <a href="#">Shelters</a>
+            <a href="#">Pets</a>
+            <a href="#">Volunteer</a>
         </div>
     </nav>
 
-    <!-- Adopt Modal -->
-    <div id="adopt-modal" class="modal-overlay">
-        <div class="modal-box">
-            <h2>Apply to Adopt</h2>
-            <p id="adopt-pet-name" class="modal-subtitle"></p>
-            <input type="text" id="adopter-name" placeholder="Your full name" class="modal-input">
-            <input type="email" id="adopter-email" placeholder="Your email" class="modal-input">
-            <div class="modal-actions">
-                <button class="v-btn" onclick="submitAdoption()">Submit</button>
-                <button class="btn-ghost" onclick="closeModal('adopt-modal')">Cancel</button>
-            </div>
-            <p id="adopt-msg" class="form-msg"></p>
-        </div>
-    </div>
-
-    <!-- Add Pet Modal -->
-    <div id="add-pet-modal" class="modal-overlay">
-        <div class="modal-box">
-            <h2>Add a Pet</h2>
-            <input type="text" id="new-pet-name" placeholder="Name" class="modal-input">
-            <input type="text" id="new-pet-species" placeholder="Species (Dog, Cat...)" class="modal-input">
-            <input type="text" id="new-pet-breed" placeholder="Breed" class="modal-input">
-            <input type="number" id="new-pet-age" placeholder="Age (years)" class="modal-input">
-            <input type="number" id="new-pet-shelter" placeholder="Shelter ID" class="modal-input">
-            <textarea id="new-pet-desc" placeholder="Description" class="modal-input" rows="3"></textarea>
-            <div class="modal-actions">
-                <button class="v-btn" onclick="submitAddPet()">Add Pet</button>
-                <button class="btn-ghost" onclick="closeModal('add-pet-modal')">Cancel</button>
-            </div>
-            <p id="add-pet-msg" class="form-msg"></p>
-        </div>
-    </div>
-
-    <!-- Hero + Search -->
     <header class="v-hero">
         <h1>Every animal has a <em>story</em>. Help write the next chapter.</h1>
-        <p style="color: var(--cool-steel); margin-bottom: 2rem;">Connecting loyal companions with loving homes across Tallahassee.</p>
+        <p style="color: var(--cool-steel); margin-bottom: 2rem;">Connecting loyal companions with loving homes across Tallahassee through advanced data integration.</p>
+        
         <div class="v-search">
             <input type="text" id="species-search" placeholder="Search species...">
-            <select id="status-filter" class="search-select">
-                <option value="">All Status</option>
-                <option value="Available">Available</option>
-                <option value="Pending">Pending</option>
-                <option value="Adopted">Adopted</option>
-            </select>
-            <button class="v-btn" onclick="loadPets()">Search</button>
+            <button class="v-btn" onclick="loadPets()">Explore</button>
         </div>
     </header>
 
-    <!-- Shelter Stats — aggregate query (COUNT + AVG grouped by shelter) -->
-    <section id="stats-section" class="stats-section">
-        <div class="section-header">
-            <h2>Shelter <em>Overview</em></h2>
-            <p style="color: var(--cool-steel);">Live statistics across all participating shelters</p>
-        </div>
-        <div id="stats-grid" class="stats-grid"></div>
-    </section>
-
-    <!-- Manage Section -->
-    <section id="manage-section" class="manage-bar">
-        <h2>Manage <em>Pets</em></h2>
-        <button class="v-btn" onclick="openModal('add-pet-modal')">+ Add New Pet</button>
-    </section>
-
-    <!-- Pet Grid -->
     <section id="pet-results" class="pet-grid"></section>
 
+    <div id="adoptModal" class="v-modal">
+        <div class="modal-content">
+            <h2>Start Adoption for <span id="targetPetName" style="color: var(--strawberry-red);"></span></h2>
+            <p>Please enter your details to submit an application.</p>
+            
+            <input type="hidden" id="targetPetId">
+            <div class="input-group">
+                <input type="text" id="adopterName" placeholder="Your Full Name">
+                <input type="email" id="adopterEmail" placeholder="Email Address">
+                <input type="phone" id="adopterPhone" placeholder="Phone Number">
+                <input type="address" id="adopterAddress" placeholder="Address">
+            </div>
+            
+            <div class="modal-actions">
+                <button class="v-btn" onclick="submitAdoption()">Submit Application</button>
+                <button class="v-btn-outline" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+
+    //Javascript for handling the modal and adoption process
     <script>
-        let currentPetId = null;
-
-        // Load shelter stats (aggregate query: COUNT + AVG grouped by shelter, joined with Pets)
-        async function loadStats() {
-            const res = await fetch('/api/stats');
-            const stats = await res.json();
-            const grid = document.getElementById('stats-grid');
-            if (!stats.length) {
-                grid.innerHTML = '<p style="color:var(--cool-steel)">No shelters found. Add shelters via the CLI to get started.</p>';
-                return;
-            }
-            grid.innerHTML = stats.map(s => `
-                <div class="stats-card">
-                    <h3>${s.ShelterName}</h3>
-                    <div class="stats-numbers">
-                        <div><span class="big-num">${s.TotalPets}</span>Total</div>
-                        <div><span class="big-num available">${s.Available ?? 0}</span>Available</div>
-                        <div><span class="big-num adopted">${s.Adopted ?? 0}</span>Adopted</div>
-                        <div><span class="big-num">${s.AvgAge ?? '—'}</span>Avg Age</div>
-                    </div>
-                </div>
-            `).join('');
+        // 1. The function that was missing - opens the modal
+        function openAdoptModal(id, name) {
+            document.getElementById('targetPetId').value = id;
+            document.getElementById('targetPetName').innerText = name;
+            document.getElementById('adoptModal').style.display = 'flex';
         }
 
-        // Load pets (join query: Pets + Shelters, with optional species/status filter)
-        async function loadPets() {
-            const species = document.getElementById('species-search').value;
-            const status = document.getElementById('status-filter').value;
-            const res = await fetch(`/api/pets?species=${encodeURIComponent(species)}&status=${encodeURIComponent(status)}`);
-            const pets = await res.json();
-            const container = document.getElementById('pet-results');
-            if (!pets.length) {
-                container.innerHTML = '<p style="padding:2rem 5%;color:var(--cool-steel);">No pets found matching your search.</p>';
-                return;
-            }
-            container.innerHTML = pets.map(pet => `
-                <div class="pet-card" id="card-${pet.PetID}">
-                    <span class="status-tag status-${pet.AdoptionStatus.toLowerCase()}">${pet.AdoptionStatus}</span>
-                    <h3>${pet.Name}</h3>
-                    <p>${pet.Species}${pet.Breed ? ' · ' + pet.Breed : ''} · ${pet.Age} yr${pet.Age !== 1 ? 's' : ''}</p>
-                    <p style="color:var(--cool-steel);font-size:0.9rem;margin-top:8px;">
-                        ${pet.ShelterName ?? 'Unknown Shelter'}
-                    </p>
-                    ${pet.Description ? `<p class="pet-desc">${pet.Description}</p>` : ''}
-                    <div class="card-actions">
-                        <button class="v-btn adopt-btn"
-                            onclick="openAdoptModal(${pet.PetID}, '${pet.Name.replace(/'/g, "\\'")}')"
-                            ${pet.AdoptionStatus !== 'Available' ? 'disabled' : ''}>
-                            Adopt
-                        </button>
-                        <div class="update-row">
-                            <select id="status-${pet.PetID}" class="status-select-sm">
-                                <option value="Available" ${pet.AdoptionStatus === 'Available' ? 'selected' : ''}>Available</option>
-                                <option value="Pending"   ${pet.AdoptionStatus === 'Pending'   ? 'selected' : ''}>Pending</option>
-                                <option value="Adopted"   ${pet.AdoptionStatus === 'Adopted'   ? 'selected' : ''}>Adopted</option>
-                            </select>
-                            <button class="btn-secondary" onclick="updatePetStatus(${pet.PetID})">Update</button>
-                            <button class="btn-danger"    onclick="deletePet(${pet.PetID})">Delete</button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+        function closeModal() {
+            document.getElementById('adoptModal').style.display = 'none';
         }
 
-        // Basic Function: Update — change adoption status
-        async function updatePetStatus(petId) {
-            const status = document.getElementById(`status-${petId}`).value;
-            const res = await fetch(`/api/pets/${petId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status })
-            });
-            const data = await res.json();
-            if (res.ok) { loadPets(); loadStats(); }
-            else alert(data.error);
-        }
-
-        // Basic Function: Delete — remove a pet listing
-        async function deletePet(petId) {
-            if (!confirm('Delete this pet listing?')) return;
-            const res = await fetch(`/api/pets/${petId}`, { method: 'DELETE' });
-            const data = await res.json();
-            if (res.ok) { loadPets(); loadStats(); }
-            else alert(data.error);
-        }
-
-        // Basic Function: Insert — adopt flow opens a modal to capture adopter info
-        function openAdoptModal(petId, petName) {
-            currentPetId = petId;
-            document.getElementById('adopt-pet-name').textContent = 'Applying for: ' + petName;
-            document.getElementById('adopt-msg').textContent = '';
-            document.getElementById('adopter-name').value = '';
-            document.getElementById('adopter-email').value = '';
-            openModal('adopt-modal');
-        }
-
+        // 2. The function to process the transaction (Insert Adopter + Update Pet)
         async function submitAdoption() {
-            const res = await fetch('/api/adopt', {
+            const petId = document.getElementById('targetPetId').value;
+            const name = document.getElementById('adopterName').value;
+            const email = document.getElementById('adopterEmail').value;
+            const phone = document.getElementById('adopterPhone').value;
+            const address = document.getElementById('adopterAddress').value;
+            
+
+            if (!name || !email) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            const response = await fetch('/api/adopt', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    pet_id: currentPetId,
-                    adopter_name: document.getElementById('adopter-name').value,
-                    adopter_email: document.getElementById('adopter-email').value
-                })
+                body: JSON.stringify({ pet_id: petId, adopter_name: name, adopter_email: email,
+                    adopter_phone: phone, adopter_address: address})
             });
-            const data = await res.json();
-            const msg = document.getElementById('adopt-msg');
-            msg.textContent = data.message || data.error;
-            msg.style.color = res.ok ? '#4CAF50' : 'var(--strawberry-red)';
-            if (res.ok) { loadPets(); loadStats(); setTimeout(() => closeModal('adopt-modal'), 1500); }
+
+            if (response.ok) {
+                alert("Success! The pet status is now 'Pending'.");
+                closeModal();
+                loadPets(); // Refresh the list to show the Update 
+            } else {
+                alert("Error submitting application.");
+            }
         }
 
-        // Basic Function: Insert — add a new pet record
-        async function submitAddPet() {
-            const res = await fetch('/api/pets', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name:        document.getElementById('new-pet-name').value,
-                    species:     document.getElementById('new-pet-species').value,
-                    breed:       document.getElementById('new-pet-breed').value,
-                    age:         parseInt(document.getElementById('new-pet-age').value) || 0,
-                    shelter_id:  parseInt(document.getElementById('new-pet-shelter').value) || null,
-                    description: document.getElementById('new-pet-desc').value
-                })
+        // 3. Load pets and generate the 'Adopt' buttons
+        async function loadPets() {
+            const response = await fetch('/api/pets');
+            const pets = await response.json();
+            const container = document.getElementById('pet-results');
+            container.innerHTML = '';
+
+            pets.forEach(pet => {
+                const actionButton = pet.AdoptionStatus === 'Available' 
+                    ? `<button class="v-btn" onclick="openAdoptModal(${pet.PetID}, '${pet.Name}')">Adopt</button>`
+                    : `<button class="v-btn" disabled style="background:var(--cool-steel); opacity: 0.5;">${pet.AdoptionStatus}</button>`;
+
+                container.innerHTML += `
+                    <div class="pet-card">
+                        <span class="status-tag">${pet.AdoptionStatus}</span>
+                        <h3>${pet.Name}</h3>
+                        <p>${pet.Breed} • ${pet.Age} years old</p>
+                        ${actionButton}
+                    </div>
+                `;
             });
-            const data = await res.json();
-            const msg = document.getElementById('add-pet-msg');
-            msg.textContent = data.message || data.error;
-            msg.style.color = res.ok ? '#4CAF50' : 'var(--strawberry-red)';
-            if (res.ok) { loadPets(); loadStats(); setTimeout(() => closeModal('add-pet-modal'), 1500); }
         }
-
-        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-        document.addEventListener('click', e => {
-            if (e.target.classList.contains('modal-overlay')) closeModal(e.target.id);
-        });
-
-        window.onload = () => { loadStats(); loadPets(); };
+        
+        window.onload = loadPets;
     </script>
 </body>
 </html>
