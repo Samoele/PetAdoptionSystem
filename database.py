@@ -47,8 +47,8 @@ def init_db(): #Connects to the SQLite database file named 'pet_adoption.db'. If
         AppID INTEGER PRIMARY KEY AUTOINCREMENT,
         AdopterID INTEGER,
         PetID INTEGER,
-        AppDate TEXT NOT NULL,
-        AppStatus TEXT NOT NULL,
+        AppDate TEXT NOT NULL DEFAULT (datetime('now')),
+        AppStatus TEXT DEFAULT 'Pending' CHECK(AppStatus IN ('Pending', 'Approved', 'Rejected')),
         FOREIGN KEY (AdopterID) REFERENCES Adopters(AdopterID), 
         FOREIGN KEY (PetID) REFERENCES Pets(PetID))
     ''')

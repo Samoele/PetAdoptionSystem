@@ -25,3 +25,9 @@ Ensure Python 3 is installed. It is highly recommended to use a virtual environm
 ```bash
 # Install Flask
 pip install flask
+
+then
+
+#To actually run the flask server
+python app.py 
+

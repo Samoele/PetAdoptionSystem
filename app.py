@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify
+from datetime import datetime
 import sqlite3
 
 
@@ -38,25 +39,36 @@ def adopt_pet():
     pet_id = data['pet_id']
     adopter_name = data['adopter_name']
     adopter_email = data['adopter_email']
+    adopter_phone = data.get('adopter_phone')
+    adopter_address = data.get('adopter_address')
+
+    current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
         #insert adopter info into Adopters table, using INSERT OR IGNORE to avoid duplicates based on unique email constraint [cite: 5]
-        cursor.execute ('INSERT OR IGNORE INTO Adopters (Name, Email) VALUES (?, ?)', (adopter_name, adopter_email))
+        cursor.execute ('INSERT OR IGNORE INTO Adopters (Name, ContactEmail, Address, PhoneNumber) VALUES (?, ?, ?, ?)', (adopter_name, adopter_email, adopter_phone, adopter_address))
         adopter_id = cursor.lastrowid # Get the AdopterID of the newly inserted adopter or existing one
 
         #Update pets status
         cursor.execute('UPDATE Pets SET AdoptionStatus = "Pending" WHERE PetID = ?', (pet_id))
         
         #Create application
-        cursor.execute('INSERT INTO Applications (PetID, AdopterID) VALUES (?, ?)', (pet_id, adopter_id))
+        cursor.execute('INSERT INTO AdoptionApplications (PetID, AdopterID, AppDate, AppStatus) VALUES (?, ?, ?, "Under Review")', (pet_id, adopter_id, current_date))
+        
+        #Deletion of pets
+        
+        
+        
+        
         conn.commit()
 
         return jsonify({'message': 'Adoption application submitted successfully!'})
     except Exception as e:
-        conn.rollback()
-        return jsonify({'error': str(e)}), 400  
+            conn.rollback()
+            print(f"DATABASE ERROR: {e}") # This will print the exact reason in your terminal
+            return jsonify({"error": str(e)}), 400
         
 if __name__ == '__main__':
     app.run(debug=True)

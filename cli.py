@@ -1,5 +1,9 @@
 import sqlite3
 
+#This is a simple command-line interface (CLI) for managing the pet adoption system. 
+# Features include adding shelters, adding pets, and viewing all pets along with their 
+# shelter information. 
+
 def get_connection():
     conn = sqlite3.connect('pet_adoption.db')
     conn.execute("PRAGMA foreign_keys = ON;") #Enables foreign key constraints for the connection, ensuring that any operations involving foreign keys will be properly enforced")
@@ -12,7 +16,8 @@ def cli_menu():
         print("1. Add a Shelter")
         print("2. Add a Pet (Basic Function: Insert)")
         print("3. View All Pets with Shelter Info (Basic Function: Join)")
-        print("4. Exit")
+        print("4. Delete a Pet or Shelter (Basic Function: Delete)") #Delete function 
+        print("5. Exit")
         
         choice = input("Select an option: ")
 
@@ -32,13 +37,14 @@ def cli_menu():
             species = input("Species: ")
             breed = input("Breed: ")
             age = input("Age: ")
+            description = input("Description: ")
             shelter_id = input("Shelter ID: ")
             
             try:
                 conn = get_connection()
-                conn.execute('''INSERT INTO Pets (Name, Species, Breed, Age, AdoptionStatus, ShelterID) 
-                               VALUES (?, ?, ?, ?, 'Available', ?)''', 
-                            (name, species, breed, age, shelter_id))
+                conn.execute('''INSERT INTO Pets (Name, Species, Breed, Age, Description, AdoptionStatus, ShelterID) 
+                               VALUES (?, ?, ?, ?, ?, 'Available', ?)''', 
+                            (name, species, breed, age, description,shelter_id))
                 conn.commit()
                 print(f"Successfully inserted {name} into the database.")
             except sqlite3.IntegrityError:
@@ -51,16 +57,33 @@ def cli_menu():
             conn = get_connection()
             # This implements the Join query required for your demo
             query = '''
-                SELECT Pets.Name, Pets.Species, Shelters.Name 
+                SELECT Pets.Name, Pets.Species, Shelters.Name, Pets.AdoptionStatus
                 FROM Pets 
                 JOIN Shelters ON Pets.ShelterID = Shelters.ShelterID
             '''
             results = conn.execute(query).fetchall()
             for row in results:
-                print(f"Pet: {row[0]} | Species: {row[1]} | Shelter: {row[2]}")
+                print(f"Pet: {row[0]} | Species: {row[1]} | Shelter: {row[2]} | Status: {row[3]}")
             conn.close()
 
         elif choice == '4':
+            delete_type = input("Delete a Pet or a Shelter? (Enter 'Pet' or 'Shelter'): ")
+            if delete_type.lower() == 'pet':
+                pet_id = input("Enter the Pet ID to delete: ")
+                conn = get_connection()
+                conn.execute("DELETE FROM Pets WHERE PetID = ?", (pet_id))
+                conn.commit()
+                print(f"Pet with ID {pet_id} deleted")
+                conn.close()
+            elif delete_type.lower() == 'shelter':
+                shelter_id = input("Enter the Shelter ID to delete: ")
+                conn = get_connection()
+                conn.execute("DELETE FROM Shelters WHERE ShelterID = ?", (shelter_id))
+                conn.commit()
+                print(f"Shelter with ID {shelter_id} deleted")
+                conn.close()
+
+        elif choice == '5':
             break
 
 if __name__ == "__main__":

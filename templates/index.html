@@ -27,30 +27,95 @@
         </div>
     </header>
 
-    <section id="pet-results" class="pet-grid">
-        </section>
+    <section id="pet-results" class="pet-grid"></section>
 
+    <div id="adoptModal" class="v-modal">
+        <div class="modal-content">
+            <h2>Start Adoption for <span id="targetPetName" style="color: var(--strawberry-red);"></span></h2>
+            <p>Please enter your details to submit an application.</p>
+            
+            <input type="hidden" id="targetPetId">
+            <div class="input-group">
+                <input type="text" id="adopterName" placeholder="Your Full Name">
+                <input type="email" id="adopterEmail" placeholder="Email Address">
+                <input type="phone" id="adopterPhone" placeholder="Phone Number">
+                <input type="address" id="adopterAddress" placeholder="Address">
+            </div>
+            
+            <div class="modal-actions">
+                <button class="v-btn" onclick="submitAdoption()">Submit Application</button>
+                <button class="v-btn-outline" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+
+    //Javascript for handling the modal and adoption process
     <script>
+        // 1. The function that was missing - opens the modal
+        function openAdoptModal(id, name) {
+            document.getElementById('targetPetId').value = id;
+            document.getElementById('targetPetName').innerText = name;
+            document.getElementById('adoptModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('adoptModal').style.display = 'none';
+        }
+
+        // 2. The function to process the transaction (Insert Adopter + Update Pet)
+        async function submitAdoption() {
+            const petId = document.getElementById('targetPetId').value;
+            const name = document.getElementById('adopterName').value;
+            const email = document.getElementById('adopterEmail').value;
+            const phone = document.getElementById('adopterPhone').value;
+            const address = document.getElementById('adopterAddress').value;
+            
+
+            if (!name || !email) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            const response = await fetch('/api/adopt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pet_id: petId, adopter_name: name, adopter_email: email,
+                    adopter_phone: phone, adopter_address: address})
+            });
+
+            if (response.ok) {
+                alert("Success! The pet status is now 'Pending'.");
+                closeModal();
+                loadPets(); // Refresh the list to show the Update 
+            } else {
+                alert("Error submitting application.");
+            }
+        }
+
+        // 3. Load pets and generate the 'Adopt' buttons
         async function loadPets() {
-            const species = document.getElementById('species-search').value;
-            // Basic Function: Search and Print
-            const response = await fetch(`/api/pets?species=${species}`);
+            const response = await fetch('/api/pets');
             const pets = await response.json();
             const container = document.getElementById('pet-results');
             container.innerHTML = '';
 
             pets.forEach(pet => {
+                const actionButton = pet.AdoptionStatus === 'Available' 
+                    ? `<button class="v-btn" onclick="openAdoptModal(${pet.PetID}, '${pet.Name}')">Adopt</button>`
+                    : `<button class="v-btn" disabled style="background:var(--cool-steel); opacity: 0.5;">${pet.AdoptionStatus}</button>`;
+
                 container.innerHTML += `
                     <div class="pet-card">
                         <span class="status-tag">${pet.AdoptionStatus}</span>
                         <h3>${pet.Name}</h3>
                         <p>${pet.Breed} • ${pet.Age} years old</p>
-                        <p style="color: var(--cool-steel); font-size: 0.9rem; margin-top: 10px;">Shelter: ${pet.ShelterName}</p>
-                        <button class="v-btn" style="margin-top: 20px; width: 100%;" onclick="adoptPet(${pet.PetID})">Adopt</button>
+                        ${actionButton}
                     </div>
                 `;
             });
         }
+        
         window.onload = loadPets;
     </script>
 </body>
