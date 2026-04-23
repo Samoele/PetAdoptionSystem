@@ -108,7 +108,7 @@ body {
 
 .pet-card h3 { font-size: 1.8rem; margin-bottom: 10px; }
 
-.status-tag { font-size: 0.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; }
+.status-tag { color: var(--strawberry-red); font-size: 0.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; }
 .status-tag.status-available { color: #4CAF50; }
 .status-tag.status-pending   { color: #FF9800; }
 .status-tag.status-adopted   { color: var(--cool-steel); }
@@ -293,3 +293,57 @@ body {
 
 .manage-bar h2 { font-size: 2rem; }
 .manage-bar h2 em { font-style: italic; color: var(--strawberry-red); }
+
+/* Adopt Modal (current HTML) */
+.v-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(14, 19, 31, 0.92);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: var(--twilight-indigo);
+    padding: 2.5rem;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 480px;
+    border-top: 4px solid var(--strawberry-red);
+}
+
+.modal-content h2 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+.modal-content > p { color: var(--cool-steel); margin-bottom: 1.5rem; font-size: 0.95rem; }
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.input-group input {
+    background: var(--ink-black);
+    border: 1px solid var(--vintage-grape);
+    color: var(--text-white);
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    outline: none;
+    font-family: inherit;
+}
+.input-group input:focus { border-color: var(--strawberry-red); }
+
+.v-btn-outline {
+    background: transparent;
+    color: var(--cool-steel);
+    border: 1px solid var(--vintage-grape);
+    padding: 12px 30px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+}
+.v-btn-outline:hover { border-color: var(--cool-steel); color: var(--text-white); }
