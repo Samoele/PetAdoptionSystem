@@ -430,3 +430,30 @@ body {
     border-top: 1px solid rgba(255, 0, 53, 0.2);
     font-size: 0.85rem;
 }
+
+/* Manager Page */
+.v-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 30px;
+    background: var(--ink-black);
+}
+
+.v-table th, .v-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--vintage-grape);
+}
+
+.delete-btn {
+    background: none;
+    border: 1px solid var(--strawberry-red);
+    color: var(--strawberry-red);
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+.delete-btn:hover {
+    background: var(--strawberry-red);
+    color: white;
+}

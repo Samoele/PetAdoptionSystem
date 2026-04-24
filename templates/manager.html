@@ -1,0 +1,115 @@
+Code for manager page using gemini ai
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage | AdoptTally</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="manage-body">
+    <div class="v-container">
+        <h1>Inventory Manager</h1>
+        <p>Database Administrator View</p>
+
+        <div class="admin-actions">
+            <button class="v-btn" onclick="openAddPetModal()">+ Add New Pet</button>
+            <button class="v-btn-outline" onclick="openAddShelterModal()">+ Add New Shelter</button>
+        </div>
+
+        <table class="v-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Species</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="manage-pet-list">
+                </tbody>
+        </table>
+    </div>
+
+    <div id="addPetModal" class="v-modal">
+        <div class="modal-content">
+            <h2>Add New Pet</h2>
+            <div class="input-group">
+                <input type="text" id="newPetName" placeholder="Pet Name">
+                <input type="text" id="newPetSpecies" placeholder="Species (e.g., Dog)">
+                <input type="text" id="newPetBreed" placeholder="Breed">
+                <input type="number" id="newPetAge" placeholder="Age">
+                <input type="text" id="newPetDescription" placeholder="Description">
+                <input type="number" id="newPetShelterID" placeholder="Shelter ID"> 
+            </div>
+            <div class="modal-actions">
+                <button class="v-btn" onclick="submitNewPet()">Save Pet</button>
+                <button class="v-btn-outline" onclick="closeModal('addPetModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadManagerPets() {
+            const response = await fetch('/api/pets');
+            const pets = await response.json();
+            const list = document.getElementById('manage-pet-list');
+            list.innerHTML = '';
+
+            pets.forEach(pet => {
+                list.innerHTML += `
+                    <tr>
+                        <td>${pet.PetID}</td>
+                        <td>${pet.Name}</td>
+                        <td>${pet.Species}</td>
+                        <td><span class="badge">${pet.AdoptionStatus}</span></td>
+                        <td>
+                            <button onclick="updateStatus(${pet.PetID}, 'Adopted')">Adopted</button>
+                            <button class="delete-btn" onclick="deletePet(${pet.PetID})">Delete</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        async function deletePet(id) {
+            if(confirm("Are you sure? This will forever remove this pet from the system.")) {
+                const response = await fetch(`/api/pets/${id}`, { method: 'DELETE' });
+                if(response.ok) loadManagerPets();
+            }
+        }
+
+        // Open/Close functions
+        function openAddPetModal() { document.getElementById('addPetModal').style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        // Send data to the backend
+        async function submitNewPet() {
+            const data = {
+                name: document.getElementById('newPetName').value,
+                species: document.getElementById('newPetSpecies').value,
+                breed: document.getElementById('newPetBreed').value,
+                age: document.getElementById('newPetAge').value,
+                description: document.getElementById('newPetDescription').value,
+                shelter_id: document.getElementById('newPetShelterID').value,
+                status: 'Available'
+            };
+
+            const response = await fetch('/api/pets', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                alert("Pet added successfully!");
+                closeModal('addPetModal');
+                loadManagerPets(); // Refresh the table
+            } else {
+                alert("Error adding pet. Check if Shelter ID exists.");
+            }
+        }
+
+        window.onload = loadManagerPets;
+    </script>
+</body>
+</html>

@@ -17,9 +17,9 @@ def index():
     # This serves the main HTML page to the user
     return render_template('index.html')
 
-@app.route('/manage')
+@app.route('/manager') #Manager page
 def manage_page():
-    return render_template('manage.html')
+    return render_template('manager.html')
 
 # Basic Function: Search and List
 @app.route('/api/pets', methods=['GET'])
@@ -53,6 +53,37 @@ def get_shelter_stats():
     stats = conn.execute(query).fetchall()
     conn.close()
     return jsonify([dict(row) for row in stats])
+
+#Function for deleting pets
+@app.route('/api/pets/<int:pet_id>', methods=['DELETE'])
+def delete_pet(pet_id):
+    conn = get_db_connection()
+    try:
+        conn.execute('DELETE FROM Pets WHERE PetID = ?', (pet_id,))
+        conn.commit()
+        return jsonify({"message": "Deleted"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+    finally:
+        conn.close()
+
+
+#Function for adding pets from manager page
+@app.route('/api/pets', methods=['POST'])
+def add_pet():
+    data = request.json
+    conn = get_db_connection()
+    try:
+        conn.execute('''
+            INSERT INTO Pets (Name, Species, Breed, Age, AdoptionStatus, ShelterID)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (data['name'], data['species'], data['breed'], data['age'], data['status'], data['shelter_id']))
+        conn.commit()
+        return jsonify({"message": "Pet added!"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+    finally:
+        conn.close()
 
 @app.route('/api/adopt', methods=['POST'])
 def adopt_pet():
