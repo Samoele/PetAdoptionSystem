@@ -24,16 +24,21 @@ def manage_page():
 # Basic Function: Search and List
 @app.route('/api/pets', methods=['GET'])
 def get_pets():
+    species = request.args.get('species', '')
     conn = get_db_connection()
     # Joining Pets and Shelters for the demo requirement [cite: 44]
     query = '''
-        SELECT p.*, s.Name as ShelterName 
-        FROM Pets p 
+        SELECT p.*, s.Name as ShelterName
+        FROM Pets p
         LEFT JOIN Shelters s ON p.ShelterID = s.ShelterID
     '''
-    pets = conn.execute(query).fetchall()
+    params = []
+    if species:
+        query += ' WHERE p.Species LIKE ?'
+        params.append(f'%{species}%')
+    pets = conn.execute(query, params).fetchall()
     conn.close()
-    
+
     # Convert database rows to a list of dictionaries for the frontend
     return jsonify([dict(ix) for ix in pets])
 
@@ -53,6 +58,68 @@ def get_shelter_stats():
     stats = conn.execute(query).fetchall()
     conn.close()
     return jsonify([dict(row) for row in stats])
+
+# Advanced Function: Compatibility recommender — scores available pets against user lifestyle preferences
+# Uses a single SQL query with weighted CASE expressions across 5 criteria (max 100 pts),
+# joined with Shelters, filtered to Available only, and sorted by score descending.
+@app.route('/api/recommend', methods=['GET'])
+def recommend_pets():
+    species    = request.args.get('species',    'any').lower()
+    age_pref   = request.args.get('age_pref',   'any').lower()
+    activity   = request.args.get('activity',   'medium').lower()
+    living     = request.args.get('living',     'house').lower()
+    experience = request.args.get('experience', 'experienced').lower()
+
+    conn = get_db_connection()
+    query = '''
+        SELECT p.PetID, p.Name, p.Species, p.Breed, p.Age, p.Description,
+               s.Name AS ShelterName,
+               (
+                   CASE WHEN ? = 'any' OR LOWER(p.Species) = ? THEN 30 ELSE 0 END
+                 + CASE
+                       WHEN ? = 'any'                                   THEN 15
+                       WHEN ? = 'young'  AND p.Age <= 2                 THEN 25
+                       WHEN ? = 'adult'  AND p.Age BETWEEN 3 AND 7      THEN 25
+                       WHEN ? = 'senior' AND p.Age >= 8                 THEN 25
+                       ELSE 5
+                   END
+                 + CASE
+                       WHEN ? = 'medium'                                THEN 15
+                       WHEN ? = 'high'   AND LOWER(p.Species) = 'dog'   THEN 25
+                       WHEN ? = 'low'    AND LOWER(p.Species) = 'cat'   THEN 25
+                       WHEN ? = 'low'    AND LOWER(p.Species) = 'dog'
+                                         AND p.Age >= 5                 THEN 15
+                       ELSE 5
+                   END
+                 + CASE
+                       WHEN ? = 'house'                                 THEN 10
+                       WHEN ? = 'apartment' AND LOWER(p.Species) = 'cat' THEN 10
+                       WHEN ? = 'apartment' AND LOWER(p.Species) = 'dog'
+                                            AND p.Age >= 4              THEN 7
+                       ELSE 3
+                   END
+                 + CASE
+                       WHEN ? = 'experienced'                           THEN 10
+                       WHEN ? = 'first' AND p.Age BETWEEN 2 AND 6       THEN 10
+                       WHEN ? = 'first' AND p.Age < 2                   THEN 5
+                       ELSE 5
+                   END
+               ) AS CompatibilityScore
+        FROM Pets p
+        LEFT JOIN Shelters s ON p.ShelterID = s.ShelterID
+        WHERE p.AdoptionStatus = 'Available'
+        ORDER BY CompatibilityScore DESC
+    '''
+    params = [
+        species, species,
+        age_pref, age_pref, age_pref, age_pref,
+        activity, activity, activity, activity,
+        living, living, living,
+        experience, experience, experience,
+    ]
+    pets = conn.execute(query, params).fetchall()
+    conn.close()
+    return jsonify([dict(row) for row in pets])
 
 #Function for deleting pets
 @app.route('/api/pets/<int:pet_id>', methods=['DELETE'])

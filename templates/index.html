@@ -25,6 +25,57 @@
         </div>
     </header>
 
+    <!-- Advanced Function: Compatibility Recommender -->
+    <section class="v-container">
+        <h2 class="v-section-title">Find Your <em style="color:var(--strawberry-red);font-style:italic;">Perfect Match</em></h2>
+        <p style="color:var(--cool-steel);margin-bottom:2rem;">Tell us about your lifestyle and we'll rank every available pet by compatibility.</p>
+        <form class="pref-grid" onsubmit="runRecommender(event)">
+            <div class="pref-group">
+                <label class="pref-label">Species</label>
+                <select id="pref-species" class="pref-select">
+                    <option value="any">No preference</option>
+                    <option value="dog">Dog</option>
+                    <option value="cat">Cat</option>
+                </select>
+            </div>
+            <div class="pref-group">
+                <label class="pref-label">Age preference</label>
+                <select id="pref-age" class="pref-select">
+                    <option value="any">No preference</option>
+                    <option value="young">Young (0–2 yrs)</option>
+                    <option value="adult">Adult (3–7 yrs)</option>
+                    <option value="senior">Senior (8+ yrs)</option>
+                </select>
+            </div>
+            <div class="pref-group">
+                <label class="pref-label">Activity level</label>
+                <select id="pref-activity" class="pref-select">
+                    <option value="medium">Medium</option>
+                    <option value="high">High / Very active</option>
+                    <option value="low">Low / Relaxed</option>
+                </select>
+            </div>
+            <div class="pref-group">
+                <label class="pref-label">Living situation</label>
+                <select id="pref-living" class="pref-select">
+                    <option value="house">House with yard</option>
+                    <option value="apartment">Apartment</option>
+                </select>
+            </div>
+            <div class="pref-group">
+                <label class="pref-label">Experience</label>
+                <select id="pref-experience" class="pref-select">
+                    <option value="experienced">Experienced owner</option>
+                    <option value="first">First-time owner</option>
+                </select>
+            </div>
+            <div class="pref-group pref-submit">
+                <button type="submit" class="v-btn">Find Matches</button>
+            </div>
+        </form>
+        <div id="recommend-results"></div>
+    </section>
+
     <section class="v-container">
         <h2 class="v-section-title">Our Partner Shelters</h2>
         <div id="shelter-stats" class="shelter-stats">
@@ -105,7 +156,8 @@
 
         // 3. Load pets and generate the 'Adopt' buttons
         async function loadPets() {
-            const response = await fetch('/api/pets');
+            const species = document.getElementById('species-search').value;
+            const response = await fetch(`/api/pets?species=${encodeURIComponent(species)}`);
             const pets = await response.json();
             const container = document.getElementById('pet-results');
             container.innerHTML = '';
@@ -149,6 +201,42 @@
             });
         }
 
+
+        // 5. Advanced Function: Compatibility Recommender
+        async function runRecommender(e) {
+            e.preventDefault();
+            const params = new URLSearchParams({
+                species:    document.getElementById('pref-species').value,
+                age_pref:   document.getElementById('pref-age').value,
+                activity:   document.getElementById('pref-activity').value,
+                living:     document.getElementById('pref-living').value,
+                experience: document.getElementById('pref-experience').value
+            });
+            const res = await fetch(`/api/recommend?${params}`);
+            const pets = await res.json();
+            const container = document.getElementById('recommend-results');
+
+            if (!pets.length) {
+                container.innerHTML = '<p style="color:var(--cool-steel);margin-top:1rem;">No available pets found.</p>';
+                return;
+            }
+
+            container.innerHTML = pets.map((pet, i) => `
+                <div class="rec-card">
+                    <div class="rec-rank">#${i + 1}</div>
+                    <div class="rec-info">
+                        <h3>${pet.Name}</h3>
+                        <p>${pet.Species}${pet.Breed ? ' · ' + pet.Breed : ''} · ${pet.Age} yrs · ${pet.ShelterName ?? 'Unknown'}</p>
+                    </div>
+                    <div class="rec-score">
+                        <div class="score-bar-wrap">
+                            <div class="score-bar" style="width:${pet.CompatibilityScore}%"></div>
+                        </div>
+                        <span class="score-label">${pet.CompatibilityScore}/100</span>
+                    </div>
+                </div>
+            `).join('');
+        }
 
         window.onload = () => {
             loadShelterStats();
