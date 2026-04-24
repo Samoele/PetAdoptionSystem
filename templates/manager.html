@@ -1,4 +1,3 @@
-Code for manager page using gemini ai
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,6 +48,23 @@ Code for manager page using gemini ai
         </div>
     </div>
 
+    
+    <div id="addShelterModal" class="v-modal">
+        <div class="modal-content">
+            <h2>Add New Shelter</h2>
+            <div class="input-group">
+                <input type="text" id="newShelterName" placeholder="Shelter Name">
+                <input type="text" id="newShelterEmail" placeholder="Contact Email">
+                <input type="text" id="newShelterLocation" placeholder="Location">
+            </div>
+            <div class="modal-actions">
+                <button class="v-btn" onclick="submitNewShelter()">Save Shelter</button>
+                <button class="v-btn-outline" onclick="closeModal('addShelterModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+
     <script>
         async function loadManagerPets() {
             const response = await fetch('/api/pets');
@@ -56,19 +72,41 @@ Code for manager page using gemini ai
             const list = document.getElementById('manage-pet-list');
             list.innerHTML = '';
 
-            pets.forEach(pet => {
+             pets.forEach(pet => {
+                // We create the dropdown and 'select' the current status automatically
                 list.innerHTML += `
                     <tr>
                         <td>${pet.PetID}</td>
                         <td>${pet.Name}</td>
                         <td>${pet.Species}</td>
-                        <td><span class="badge">${pet.AdoptionStatus}</span></td>
                         <td>
-                            <button onclick="updateStatus(${pet.PetID}, 'Adopted')">Adopted</button>
+                            <select class="status-select" onchange="updatePetStatus(${pet.PetID}, this.value)">
+                                <option value="Available" ${pet.AdoptionStatus === 'Available' ? 'selected' : ''}>Available</option>
+                                <option value="Pending" ${pet.AdoptionStatus === 'Pending' ? 'selected' : ''}>Pending</option>
+                                <option value="Adopted" ${pet.AdoptionStatus === 'Adopted' ? 'selected' : ''}>Adopted</option>
+                            </select>
+                        </td>
+                        <td>
                             <button class="delete-btn" onclick="deletePet(${pet.PetID})">Delete</button>
                         </td>
                     </tr>`;
             });
+        }
+
+        //update pet status dropdown
+        async function updatePetStatus(petId, newStatus) {
+            const response = await fetch(`/api/pets/${petId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (response.ok) {
+                console.log(`Pet ${petId} updated to ${newStatus}`);
+                // Optional: reloadPets(); if you want to be 100% sure the UI matches
+            } else {
+                alert("Failed to update status in database.");
+            }
         }
 
         async function deletePet(id) {
@@ -108,6 +146,38 @@ Code for manager page using gemini ai
                 alert("Error adding pet. Check if Shelter ID exists.");
             }
         }
+
+        function openAddShelterModal() { 
+            document.getElementById('addShelterModal').style.display = 'flex'; 
+        }
+
+        async function submitNewShelter() {
+            const data = {
+                name: document.getElementById('newShelterName').value,
+                location: document.getElementById('newShelterLocation').value,
+                email: document.getElementById('newShelterEmail').value
+            };
+
+            if (!data.name || !data.location || !data.email) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            const response = await fetch('/api/shelters', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                alert("Shelter registered! You can now add pets to this Shelter ID.");
+                closeModal('addShelterModal');
+                // If you have a shelter list on this page, refresh it here
+            } else {
+                alert("Error saving shelter to database.");
+            }
+        }
+
 
         window.onload = loadManagerPets;
     </script>

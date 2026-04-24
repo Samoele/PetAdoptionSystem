@@ -457,3 +457,17 @@ body {
     background: var(--strawberry-red);
     color: white;
 }
+
+.status-select {
+    background: var(--twilight-indigo);
+    color: white;
+    border: 1px solid var(--vintage-grape);
+    padding: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.status-select:focus {
+    border-color: var(--strawberry-red);
+    outline: none;
+}

@@ -85,6 +85,40 @@ def add_pet():
     finally:
         conn.close()
 
+#updating pet status in manager page
+@app.route('/api/pets/<int:pet_id>/status', methods=['PUT'])
+def update_status(pet_id):
+    data = request.json
+    new_status = data.get('status')
+    
+    conn = get_db_connection()
+    try:
+        conn.execute('UPDATE Pets SET AdoptionStatus = ? WHERE PetID = ?', (new_status, pet_id))
+        conn.commit()
+        return jsonify({"message": "Status updated successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+    finally:
+        conn.close()
+
+#adding new shelter for manager page
+@app.route('/api/shelters', methods=['POST'])
+def add_shelter():
+    data = request.json
+    conn = get_db_connection()
+    try:
+        # Using AUTOINCREMENT for ShelterID
+        conn.execute('''
+            INSERT INTO Shelters (Name, Location, ContactEmail)
+            VALUES (?, ?, ?)
+        ''', (data['name'], data['location'], data['email']))
+        conn.commit()
+        return jsonify({"message": "Shelter added successfully"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+    finally:
+        conn.close()
+
 @app.route('/api/adopt', methods=['POST'])
 def adopt_pet():
     data = request.json
