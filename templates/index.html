@@ -13,7 +13,7 @@
         <div class="nav-links">
             <a href="#">Shelters</a>
             <a href="#">Pets</a>
-            <a href="#">Volunteer</a>
+            <a href="#">Manager</a>
         </div>
     </nav>
 
@@ -26,6 +26,17 @@
             <button class="v-btn" onclick="loadPets()">Explore</button>
         </div>
     </header>
+
+    <section class="v-container">
+        <h2 class="v-section-title">Our Partner Shelters</h2>
+        <div id="shelter-stats" class="shelter-stats">
+        </div>
+    </section>
+
+    <section class="v-container">
+        <h2 class="v-section-title">Available Pets</h2>
+        <div id="pet-results" class="pet-grid"></div>
+    </section>
 
     <section id="pet-results" class="pet-grid"></section>
 
@@ -115,8 +126,36 @@
                 `;
             });
         }
+
+        // 4. Load shelter stats
+        async function loadShelterStats() {
+            const response = await fetch('/api/shelter-stats');
+            const shelters = await response.json();
+            const container = document.getElementById('shelter-stats');
+            if (!container) return;
+
+            container.innerHTML = '';
+            shelters.forEach(s => {
+                container.innerHTML += `
+                    <div class="shelter-card">
+                        <div class="shelter-info">
+                            <h3>${s.Name}</h3>
+                            <p class="shelter-contact">📍 ${s.Location}</p>
+                            <p class="shelter-contact">✉️ ${s.ContactEmail}</p>
+                        </div>
+                        <div class="shelter-stats-footer">
+                            <strong>${s.TotalPets}</strong> Pets Available
+                        </div>
+                    </div>`;
+            });
+        }
+
+
+        window.onload = () => {
+            loadShelterStats();
+            loadPets();
+        };
         
-        window.onload = loadPets;
     </script>
 </body>
 </html>

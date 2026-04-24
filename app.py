@@ -17,6 +17,10 @@ def index():
     # This serves the main HTML page to the user
     return render_template('index.html')
 
+@app.route('/manage')
+def manage_page():
+    return render_template('manage.html')
+
 # Basic Function: Search and List
 @app.route('/api/pets', methods=['GET'])
 def get_pets():
@@ -32,6 +36,23 @@ def get_pets():
     
     # Convert database rows to a list of dictionaries for the frontend
     return jsonify([dict(ix) for ix in pets])
+
+
+# Basic Function: Aggregate Query and Shelter fetch 
+@app.route('/api/shelter-stats', methods=['GET'])
+def get_shelter_stats():
+    conn = get_db_connection()
+    # AGGREGATE QUERY: Counts pets per shelter while joining shelter info 
+    query = '''
+        SELECT s.ShelterID, s.Name, s.Location, s.ContactEmail, 
+               COUNT(p.PetID) as TotalPets
+        FROM Shelters s
+        LEFT JOIN Pets p ON s.ShelterID = p.ShelterID
+        GROUP BY s.ShelterID
+    '''
+    stats = conn.execute(query).fetchall()
+    conn.close()
+    return jsonify([dict(row) for row in stats])
 
 @app.route('/api/adopt', methods=['POST'])
 def adopt_pet():
