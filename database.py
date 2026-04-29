@@ -1,6 +1,6 @@
 import sqlite3
 
-def init_db(): #Connects to the SQLite database file named 'pet_adoption.db'. If the file does not exist, it will be created.
+def init_db(): #Connects to the SQLite database file named 'pet_adoption.db'. 
     conn = sqlite3.connect('pet_adoption.db') 
     cursor = conn.cursor()
     

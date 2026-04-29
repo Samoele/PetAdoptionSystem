@@ -3,7 +3,7 @@ from datetime import datetime
 import sqlite3
 
 
-#basic code implemented using gemini ai foor database connection and flask app setup. The rest of the code is written by me, but I used gemini to help me with the basic structure and some of the queries. 
+#basic code implemented using gemini ai for database connection and flask app setup. The rest of the code is written by me, but I used gemini to help me with the basic structure and some of the queries. 
 app = Flask(__name__)
 
 # Helper to connect to the database you just tested
@@ -26,7 +26,7 @@ def manage_page():
 def get_pets():
     species = request.args.get('species', '')
     conn = get_db_connection()
-    # Joining Pets and Shelters for the demo requirement [cite: 44]
+    # Joining Pets and Shelters for the demo requirement 
     query = '''
         SELECT p.*, s.Name as ShelterName
         FROM Pets p
