@@ -75,11 +75,28 @@ PetAdoptionSystem/
 
 ---
 
-## Contributions — Ammiel Bowen
+## Contributions — Ammiel Bowen - Member 1
 
 - Implemented the compatibility recommender (`/api/recommend`) — weighted multi-criteria scoring query using SQL `CASE` expressions joined across `Pets` and `Shelters`, with a ranked results UI and score bar
 - Added species search filtering — wired the search input to a `LIKE` query parameter in the backend
 - Fixed the adoption endpoint: corrected table name (`Applications` → `AdoptionApplications`), fixed the `lastrowid` bug for returning adopters, and added required `AppDate`/`AppStatus` fields
 - Added missing CSS for the adopt modal (`.v-modal`, `.modal-content`, `.input-group`, `.v-btn-outline`) so it renders and displays correctly
 
----
+## Samuel Marcano - Member 2
+
+## Backend & Database Architecture
+
+- Optimized the SQLite database into 3rd Normal Form (3NF), ensuring all non-key attributes were functionally dependent only on the Primary Key.
+
+- Developed the system’s Aggregate Queries, specifically using COUNT() and GROUP BY to generate real-time shelter capacity statistics.
+
+- Designer a RESTful API in Flask to handle CRUD operations, including a robust POST system for automatic ID incrementing and a PUT system for dynamic status updates.
+
+## Web Interface & Logic Integration
+
+- Built CLI for maniual record insertion. As well as the Manager Dashboard, moving administrative tasks (Read/Insert/Update/Delete) from the CLI to a web-based UI.
+
+- Implemented Vanilla JavaScript fetch calls to allow the interface to update in real-time (status dropdowns and shelter grids) without requiring full page reloads.
+
+- Developed the "Adoption Workflow" logic, which performs an atomic transaction to simultaneously link an Adopter to a Pet and update the Pet's availability status.
+
